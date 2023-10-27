@@ -1,0 +1,45 @@
+npm install discord.js
+const Discord = require('discord.js');
+const client = new Discord.Client();
+const prefix = '!'; // The prefix you want to use for bot commands
+
+const modMailChannelId = 'MOD_MAIL_CHANNEL_ID'; // Replace with the ID of the channel where mod mails will be sent
+
+// Event: When the bot is ready
+client.on('ready', () => {
+  console.log(`Bot logged in as ${client.user.tag}`);
+});
+
+// Event: When the bot receives a direct message
+client.on('message', async (message) => {
+  if (message.author.bot) return; // Ignore messages from other bots
+  if (!message.guild) return; // Ignore messages sent outside of guilds
+
+  const modMailChannel = client.channels.cache.get(modMailChannelId); // Get the mod mail channel
+
+  if (message.channel.type === 'dm') {
+    // Relay the message to the mod mail channel
+    modMailChannel.send(`Mod Mail from **${message.author.tag}**: ${message.content}`);
+    await message.author.send('Your message has sent to the moderators.'); // Send a confirmation message to the sender
+  }
+});
+
+// Event: When a message is sent in the mod mail channel
+client.on('message', (message) => {
+  if (message.author.bot) return; // Ignore messages sent by bots
+  if (message.channel.id !== modMailChannelId) return; // Ignore messages from other channels
+
+  // Get the user ID from the message content (assuming it is the first word after the bot prefix)
+  const userId = message.content.split(' ')[0].slice(prefix.length);
+
+  const user = client.users.cache.get(userId);
+  if (!user) return; // Ignore messages if the user couldn't be found
+
+  // Relay the message to the user
+  user.send(`Mod Response: ${message.content.slice(userId.length + 1)}`);
+});
+
+client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
+}
+
+  }
